@@ -1,0 +1,97 @@
+<html>
+
+<head>
+    <title>狼人杀</title>
+    <meta charset="UTF-8">
+    <link rel="icon" sizes="any" mask href="https://weiyinfu.cn/learnSvg/?text=狼&color=red&background=black">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <link rel="stylesheet/less" type="text/css" href="play.less" />
+    <script src="https://cdn.bootcss.com/less.js/3.10.3/less.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.6.11/vue.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.2/axios.min.js"></script>
+    <script src="game.js"></script>
+    <script src="api.js"></script>
+</head>
+
+<body>
+    <div id="main" v-if="game">
+        <div class="header">第{{game.turn}}局 {{game.fetched}}/{{total}}</div>
+        <template v-if="game.manager===me">
+            <div class="roles">
+                <div v-for="role in roles" v-if="game.info[role.name]" class="role">
+                    <span>{{role.chinese}}</span>&nbsp;
+                    <span>{{game.info [role.name] }}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <button @click="createRoom">创建房间</button>
+                <button @click="newGame">再来一局</button>
+                <button @click="fetchRoom">刷新</button>
+            </div>
+        </template>
+        <template v-else>
+            <div style="display: flex;align-items: center;">你是&nbsp;<span class="myrole">{{role.chinese}}</span>
+            </div>
+            <div class="roles">
+                <div v-for="role in roles" v-if="game.info[role.name]" class="role">
+                    <span>{{role.chinese}}</span>&nbsp;<span>{{game.info [role.name] }}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <button @click="createRoom">创建房间</button>
+                <button @click="fetchRoom">刷新</button>
+            </div>
+        </template>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: "#main",
+        data() {
+            return {
+                me: '',
+                game: null,
+                room: null,
+                roles,
+            }
+        },
+        computed: {
+            role() {
+                let role = this.game.people[this.me]
+                return roleMap[role];
+            },
+            total() {
+                return Object.values(this.game.info).reduce((o, n) => o + n, 0)
+            }
+        },
+        mounted() {
+            this.me = getUser();
+            console.log(`user=${getUser()}`)
+            this.fetchRoom();
+        },
+        methods: {
+            createRoom() {
+                location.href = "index.html"
+            },
+            newGame() {
+                const q = parseQuery();
+                newGame(q.room).then(resp => {
+                    console.log('new game')
+                    console.log(resp.data)
+                    this.game = resp.data;
+                })
+            },
+            fetchRoom() {
+                //拉取房间信息
+                const q = parseQuery();
+                fetch(q.room).then(resp => {
+                    console.log('刷新信息')
+                    console.log(resp.data)
+                    this.game = resp.data;
+                })
+            },
+        }
+    })
+</script>
+
+</html>

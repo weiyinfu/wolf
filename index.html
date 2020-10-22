@@ -1,0 +1,70 @@
+<html>
+
+<head>
+    <title>狼人杀</title>
+    <meta charset="UTF-8">
+    <link rel="icon" sizes="any" mask href="https://weiyinfu.cn/learnSvg/?text=狼&color=red&background=black">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <link rel="stylesheet/less" type="text/css" href="index.less" />
+    <script src="https://cdn.bootcss.com/less.js/3.10.3/less.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.6.11/vue.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.19.2/axios.min.js"></script>
+    <script src="game.js"></script>
+    <script src="api.js"></script>
+</head>
+
+<body>
+    <div id="main" v-if="game">
+        <div class="header">总人数：{{total}}</div>
+        <div class="roles">
+            <template v-for="role in roles">
+                <div v-if="role.min===role.max" class="role">
+                    {{role.chinese}}<input type="checkbox" v-model="game[role.name]">
+                </div>
+                <div v-else class="role">
+                     {{role.chinese}} {{game[role.name]}}<input type="range" v-model="game[role.name]" step="1"
+                            :min="role.min" :max="role.max">
+                </div>
+            </template>
+        </div>
+        <div class="footer">
+            <button @click="createRoom">创建房间</button>
+        </div>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: "#main",
+        data() {
+            return {
+                game: null,
+                roles,
+            }
+        },
+        computed: {
+            total() {
+                return Object.values(this.game).reduce((o, n) => o + parseInt(Number(n)), 0);
+            }
+        },
+        mounted() {
+            let game = {};
+            for (let role of roles) {
+                game[role.name] = role.default;
+            }
+            this.game=game;
+            getUser();
+            console.log(`I am ${getUser()}`)
+        },
+        methods: {
+            createRoom() {
+                //创建房间
+                createRoom(this.game).then(resp => {
+                    console.log(resp.data)
+                    location.href = "play.html?room=" + resp.data.room;
+                })
+            },
+        }
+    })
+</script>
+
+</html>
