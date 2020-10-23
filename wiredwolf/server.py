@@ -9,7 +9,8 @@ from flask import Flask, redirect, request, jsonify
 from wiredwolf.snow_flake import SnowFlake
 from wiredwolf.lru_dic import LruDic
 
-app = Flask(__name__, static_url_path='/', static_folder=join(dirname(__file__), '..'))
+folder=abspath(join(dirname(__file__), '..'))
+app = Flask(__name__, static_url_path='/', static_folder=folder)
 
 snow = SnowFlake()
 games = LruDic(timeout=5 * 3600)  # 如果两个小时没有碰游戏，则删除游戏

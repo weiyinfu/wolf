@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <div hidden id="copydiv"></div>
+    <div id="copydiv" style="width:0;height:0;"></div>
     <div id="main" v-if="game">
         <div class="header">第{{game.turn}}局 {{game.fetched}}/{{total}}</div>
         <template v-if="game.manager===me">
