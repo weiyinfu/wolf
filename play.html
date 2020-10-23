@@ -14,6 +14,7 @@
 </head>
 
 <body>
+    <div hidden id="copydiv"></div>
     <div id="main" v-if="game">
         <div class="header">第{{game.turn}}局 {{game.fetched}}/{{total}}</div>
         <template v-if="game.manager===me">
@@ -24,9 +25,14 @@
                 </div>
             </div>
             <div class="footer">
-                <button @click="createRoom">创建房间</button>
-                <button @click="newGame">再来一局</button>
-                <button @click="fetchRoom">刷新</button>
+                <div>
+                    <button @click="createRoom">创建房间</button>
+                    <button @click="copyLink">复制链接</button>
+                </div>
+                <div>
+                    <button @click="newGame">再来一局</button>
+                    <button @click="fetchRoom">刷新</button>
+                </div>
             </div>
         </template>
         <template v-else>
@@ -38,8 +44,13 @@
                 </div>
             </div>
             <div class="footer">
-                <button @click="createRoom">创建房间</button>
-                <button @click="fetchRoom">刷新</button>
+                <div>
+                    <button @click="createRoom">创建房间</button>
+                    <button @click="copyLink">复制链接</button>
+                </div>
+                <div>
+                    <button @click="fetchRoom">刷新</button>
+                </div>
             </div>
         </template>
     </div>
@@ -90,6 +101,26 @@
                     this.game = resp.data;
                 })
             },
+            copyLink() {
+                this.copyText(location.href)
+            },
+            copyText(text) {
+                let textarea = document.createElement("textarea"); //创建input对象
+                let currentFocus = document.activeElement; //当前获得焦点的元素
+                let toolBoxwrap = document.querySelector("#copydiv"); //将文本框插入到NewsToolBox这个之后
+                toolBoxwrap.appendChild(textarea); //添加元素
+                textarea.value = text;
+                textarea.focus();
+                if (textarea.setSelectionRange) {
+                    textarea.setSelectionRange(0, textarea.value.length); //获取光标起始位置到结束位置
+                } else {
+                    textarea.select();
+                }
+                let flag = document.execCommand("copy"); //执行复制
+                toolBoxwrap.removeChild(textarea); //删除元素
+                currentFocus.focus();
+                return flag;
+            }
         }
     })
 </script>

@@ -1,16 +1,18 @@
 import copy
 import json
 import random
+from collections import Counter
 from os.path import *
 
-from flask import Flask, redirect, request, jsonify, make_response
+from flask import Flask, redirect, request, jsonify
 
 from wiredwolf.snow_flake import SnowFlake
+from wiredwolf.lru_dic import LruDic
 
 app = Flask(__name__, static_url_path='/', static_folder=join(dirname(__file__), '..'))
 
 snow = SnowFlake()
-games = {}
+games = LruDic(timeout=5 * 3600)  # 如果两个小时没有碰游戏，则删除游戏
 
 
 @app.route("/")
@@ -29,14 +31,14 @@ def create_room():
         form[i] = int(form[i])
     room = str(snow.get_id())
     user = get_user()
-    games[room] = {
+    games.set(room, {
         'info': form,  # 房间信息
         'manager': user,  # 房主信息
         'room': room,
         'turn': 1,
         'people': {},  # 每个人的角色映射
-    }
-    return jsonify(games[room])
+    })
+    return jsonify(games.get(room))
 
 
 @app.route("/api/newgame")
@@ -44,7 +46,7 @@ def new_game():
     # 房主点击新开一局
     user = request.cookies['userid']
     room = request.args['room']
-    game = games[room]
+    game = games.get(room)
     assert game['manager'] == user
     game['turn'] += 1
     game['people'] = {}
@@ -53,14 +55,12 @@ def new_game():
 
 
 def get_role(game):
-    info = copy.deepcopy(game['info'])
-    for k in game['people'].values():
-        info[k] -= 1
-        assert info[k] >= 0
+    info = game['info']
+    c = Counter(game['people'].values())
     left = []
     for k, v in info.items():
-        for j in range(v):
-            left.append(k)
+        assert v - c.get(k, 0) >= 0
+        left.extend([k] * (v - c.get(k, 0)))
     role = random.choice(left)
     return role
 
@@ -75,7 +75,7 @@ def fetch_info():
     # 用户获取房间信息
     room = request.args['room']
     user = get_user()
-    game = games[room]
+    game = games.get(room)
     if user not in game['people'] and user != game['manager']:
         game['people'][user] = get_role(game)
     game = copy.deepcopy(game)
@@ -90,4 +90,4 @@ def fetch_info():
 
 
 if __name__ == '__main__':
-    app.run(port=9876, debug=True, host='0.0.0.0')
+    app.run(port=9876, debug=False, host='0.0.0.0')
