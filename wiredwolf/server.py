@@ -35,7 +35,7 @@ def create_room():
         'info': form,  # 房间信息
         'manager': user,  # 房主信息
         'room': room,
-        'turn': 1,
+        'turn': 1,  # 当前是第几局游戏
         'people': {},  # 每个人的角色映射
     })
     return jsonify(games.get(room))
