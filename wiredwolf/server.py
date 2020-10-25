@@ -4,12 +4,12 @@ import random
 from collections import Counter
 from os.path import *
 
-from flask import Flask, redirect, request, jsonify
+from flask import Flask, jsonify, redirect, request
 
-from wiredwolf.snow_flake import SnowFlake
 from wiredwolf.lru_dic import LruDic
+from wiredwolf.snow_flake import SnowFlake
 
-folder=abspath(join(dirname(__file__), '..'))
+folder = abspath(join(dirname(__file__), '..'))
 app = Flask(__name__, static_url_path='/', static_folder=folder)
 
 snow = SnowFlake()
