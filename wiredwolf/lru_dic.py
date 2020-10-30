@@ -18,7 +18,6 @@ class LruDic:
                 removing.append(k)
             else:
                 break
-        print(self.a)
         for k in removing:
             del self.a[k]
 
