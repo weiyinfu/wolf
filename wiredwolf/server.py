@@ -87,6 +87,12 @@ def fetch_info():
         game['people'] = {
             user: role,
         }
+    else:
+        # 如果是管理员，也不应该让管理员获取用户的sessionid,否则管理员可以冒充其它用户
+        people = {}
+        for ind, (k, v) in enumerate(game['people'].items()):
+            people[ind] = v
+        game['people'] = people
     return jsonify(game)
 
 
