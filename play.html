@@ -15,45 +15,58 @@
 
 <body>
     <div id="copydiv" style="width:0;height:0;"></div>
-    <div id="main" v-if="game">
-        <div class="header">第{{game.turn}}局 {{game.fetched}}/{{total}}</div>
-        <template v-if="game.manager===me">
-            <div class="roles">
-                <div v-for="role in roles" v-if="game.info[role.name]" class="role">
-                    <span>{{role.chinese}}</span>&nbsp;
-                    <span>{{game.info [role.name] }}</span>
+    <div id="main">
+        <template v-if="game">
+            <div class="header">第{{game.turn}}局 {{game.fetched}}/{{total}}</div>
+            <template v-if="game.manager===me">
+                <div class="roles">
+                    <div v-for="role in roles" v-if="game.info[role.name]" class="role">
+                        <span>{{role.chinese}}</span>&nbsp;
+                        <span>{{game.info [role.name] }}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="footer">
-                <div>
-                    <button @click="createRoom">创建房间</button>
-                    <button @click="copyLink">复制链接</button>
+                <div class="footer">
+                    <div>
+                        <button @click="createRoom">创建房间</button>
+                        <button @click="copyLink">复制链接</button>
+                    </div>
+                    <div>
+                        <button @click="newGame">再来一局</button>
+                        <button @click="fetchRoom">刷新</button>
+                    </div>
                 </div>
-                <div>
-                    <button @click="newGame">再来一局</button>
-                    <button @click="fetchRoom">刷新</button>
+            </template>
+            <template v-else>
+                <div style="display: flex;align-items: center;">
+                    <template v-if="role">
+                        你是&nbsp;<span class="myrole">{{role.chinese}}</span>
+                    </template>
+                    <template v-else><span class="dangerInfo">身份已被领完</span></template>
                 </div>
-            </div>
+                <div class="roles">
+                    <div v-for="role in roles" v-if="game.info[role.name]" class="role">
+                        <span>{{role.chinese}}</span>&nbsp;<span>{{game.info [role.name] }}</span>
+                    </div>
+                </div>
+                <div class="footer">
+                    <div>
+                        <button @click="createRoom">创建房间</button>
+                        <button @click="copyLink">复制链接</button>
+                    </div>
+                    <div>
+                        <button @click="fetchRoom">刷新</button>
+                    </div>
+                </div>
+            </template>
+        </template>
+        <template v-else-if="noSuchRoom">
+            <span class="dangerInfo">没有这个房间</span>
         </template>
         <template v-else>
-            <div style="display: flex;align-items: center;">你是&nbsp;<span class="myrole">{{role.chinese}}</span>
-            </div>
-            <div class="roles">
-                <div v-for="role in roles" v-if="game.info[role.name]" class="role">
-                    <span>{{role.chinese}}</span>&nbsp;<span>{{game.info [role.name] }}</span>
-                </div>
-            </div>
-            <div class="footer">
-                <div>
-                    <button @click="createRoom">创建房间</button>
-                    <button @click="copyLink">复制链接</button>
-                </div>
-                <div>
-                    <button @click="fetchRoom">刷新</button>
-                </div>
-            </div>
+            正在加载
         </template>
     </div>
+
 </body>
 <script>
     new Vue({
@@ -64,6 +77,7 @@
                 game: null,
                 room: null,
                 roles,
+                noSuchRoom: false,
             }
         },
         computed: {
@@ -98,6 +112,10 @@
                 fetch(q.room).then(resp => {
                     console.log('刷新信息')
                     console.log(resp.data)
+                    if (resp.data === "no such room") {
+                        this.noSuchRoom = true
+                        return
+                    }
                     this.game = resp.data;
                 })
             },

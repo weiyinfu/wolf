@@ -62,6 +62,8 @@ def get_role(game):
     for k, v in info.items():
         assert v - c.get(k, 0) >= 0
         left.extend([k] * (v - c.get(k, 0)))
+    if not left:
+        return None
     role = random.choice(left)
     return role
 
@@ -77,6 +79,8 @@ def fetch_info():
     room = request.args['room']
     user = get_user()
     game = games.get(room)
+    if not game:
+        return "no such room"
     if user not in game['people'] and user != game['manager']:
         game['people'][user] = get_role(game)
     game = copy.deepcopy(game)
